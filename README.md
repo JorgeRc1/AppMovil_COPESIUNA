@@ -1,21 +1,14 @@
-# @rneui/template
 
-## React Native Elements Expo Template
+## Get started
 
-### Usage
+1. Install dependencies
 
-#### Stable
+   ```bash
+   npm install
+   ```
 
-        expo init app --template @rneui/template
+2. Start the app
 
-#### Stable Typescript
-
-        expo init app --template @rneui/template@ts
-
-#### Bleeding Edge (Experimental)
-
-        expo init app --template @rneui/template@edge
-
-#### Bleeding Edge Typescript (Experimental)
-
-        expo init app --template @rneui/template@edge-ts
+   ```bash
+    npx expo start
+   ```
