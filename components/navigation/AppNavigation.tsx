@@ -20,13 +20,13 @@ function AppNavigation () {
       initialRouteName="Inicio"
       screenOptions={{
         headerStyle: {
-          backgroundColor: '#2196f3',
+          backgroundColor: '#00A850',
           height: 60,
 
         },
         headerTintColor: 'rgb(255, 255, 255)', 
         headerTitleAlign: 'center',
-        tabBarActiveTintColor: "#007BFF",
+        tabBarActiveTintColor: "#00A850",
         tabBarInactiveTintColor: 'gray',
         tabBarStyle: {
           paddingBottom: 10, 

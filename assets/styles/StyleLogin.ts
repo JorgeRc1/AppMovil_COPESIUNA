@@ -2,8 +2,9 @@ import { StyleSheet } from "react-native";
 
 const StyleLogin = StyleSheet.create({
     button: {
-        borderWidth: 4,
+ 
         borderRadius: 30,
+        backgroundColor: "#00A850",
     },
     logoContainer: {
         marginBottom: 20,

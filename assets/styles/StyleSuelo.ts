@@ -44,6 +44,47 @@ const StyleSuelo = StyleSheet.create({
         alignItems: 'center',
     },
 
+    cardContainer: {
+        borderRadius: 8,
+        padding: 10,
+        marginBottom: 10,
+    },
+    detailText: {
+        fontSize: 14,
+        color: '#333',
+        marginTop: 5,
+    },
+    buttonContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginTop: 10,
+    },
+    enviarButton: {
+        backgroundColor: '#009933',
+    },
+    editarButton: {
+        borderColor: '#28A745',
+    },
+    editButtonContainer: {
+        marginLeft: 10,
+    },
+    textContainerView: {
+        alignItems: 'center', 
+        marginVertical: 20 
+    },
+    divider:{
+        height: 3, 
+        width: '60%', 
+        backgroundColor: '#28A745', 
+        borderRadius: 5 
+    },
+    textDivider: { 
+        fontSize: 18, 
+        fontWeight: 'bold', 
+        color: '#28A745', 
+        marginBottom: 5
+    }
+
 });
 
 export default StyleSuelo;
