@@ -83,7 +83,33 @@ const StyleSuelo = StyleSheet.create({
         fontWeight: 'bold', 
         color: '#28A745', 
         marginBottom: 5
-    }
+    },
+    StyleDropDownPicker:{
+        marginBottom: 15,
+        width: '100%',
+        backgroundColor: 'white',
+        borderColor: '#cccccc',
+        borderWidth: 0,
+        borderBottomWidth: 1.5,
+        padding: 14,
+        color: 'white',
+        
+    },
+    ButtonAdd: {
+        backgroundColor: '#00A850', 
+        width: 45, 
+        height: 45, 
+        borderRadius: 30, 
+        marginLeft: 5,
+    },
+    rowContainer: {
+        flexDirection: 'row', 
+        alignItems: 'center', 
+        marginVertical: 10, 
+        gap: 10, 
+        width: '80%',
+     
+    },
 
 });
 
