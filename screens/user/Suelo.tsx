@@ -9,7 +9,7 @@ import { getDbConnection, insertSueloBitacora, getSuelosBitacora, deleteBitacora
 import BitacoraModel from '../../utils/models/BitacoraSuelo'
 import ProductorModel from '../../utils/models/ProductorModel'
 import { showMessage } from "react-native-flash-message";
-import { Try } from "expo-router/build/views/Try";
+
 
 
 const Suelo = () => {
