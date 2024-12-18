@@ -120,11 +120,15 @@ export async function loadProductores(db: SQLite.SQLiteDatabase){
 export async function insertProductor(db: SQLite.SQLiteDatabase, Productor: typeof productor){
   const date = new Date();
   const randomId = Math.floor(Math.random() * -10000) - 1;
-  console.log(Productor);
-  console.log(randomId);
-  console.log(date.toLocaleDateString());
 
-  const query = `INSERT INTO productor (id, nombre, direccion, cedula, fecha_create,  fecha_update) VALUES ('${randomId}', '${Productor.nombre}','${Productor.direccion}', '${Productor.cedula}', '${date.toLocaleDateString()}', '${date.toLocaleDateString()}')`;
 
-  await db.runAsync(query);
+  const query = `INSERT INTO productor (id, nombre, direccion, cedula, fecha_create,  fecha_update) VALUES ('1', '${Productor.nombre}','${Productor.direccion}', '${Productor.cedula}', '${date.toLocaleDateString()}', '${date.toLocaleDateString()}')`;
+
+  const R = await db.runAsync(query);
+  console.log("productor creado:"+ R);
+}
+
+export async function FindByIdProductor(db: SQLite.SQLiteDatabase, id: number){
+  const query = `SELECT * FROM productor WHERE id = '${id}'`;
+  return await db.runAsync(query);
 }

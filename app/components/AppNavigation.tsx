@@ -7,10 +7,10 @@ import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 
 
 // pantallas
-import Inicio from "../../screens/user/Inicio"
-import Suelo from "../../screens/user/Suelo"
-import Cosecha from "../../screens/user/Cosecha"
-import Perfil from "../../screens/user/Perfil";
+import Inicio from "../screens/user/Inicio"
+import Suelo from "../screens/user/Suelo"
+import Cosecha from "../screens/user/Cosecha"
+import Perfil from "../screens/user/Perfil";
 
 const Tab = createBottomTabNavigator()
 

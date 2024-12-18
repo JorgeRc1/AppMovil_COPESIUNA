@@ -4,11 +4,14 @@ import { View, Text, FlatList } from "react-native";
 import { Input, ListItem, Button, Card } from '@rneui/base';
 import { Button as Modal, Dialog } from "@rneui/themed"
 import DropDownPicker from 'react-native-dropdown-picker';
-import StyleSuelo from "@/assets/styles/StyleSuelo";
-import { getDbConnection, insertSueloBitacora, getSuelosBitacora, deleteBitacora, editBitacora, getProductores, insertProductor, loadProductores } from '../../utils/db'
+import StyleSuelo from "../../assets/styles/StyleSuelo";
+import { getDbConnection, insertSueloBitacora, getSuelosBitacora, deleteBitacora, editBitacora, getProductores, insertProductor, loadProductores, FindByIdProductor } from '../../utils/database/db'
 import BitacoraModel from '../../utils/models/BitacoraSuelo'
 import ProductorModel from '../../utils/models/ProductorModel'
 import { showMessage } from "react-native-flash-message";
+import { sendBitacoraSuelo } from "@/app/services/BitacoraService";
+import BitacoraModelSend from "@/app/utils/models/BitacoraSueloSend";
+import productor from "../../utils/models/ProductorModel";
 
 
 
@@ -62,7 +65,6 @@ const Suelo = () => {
     };
 
     // Manejo del evento de presionar el botón para mostrar la modal
-
     const saveForm = async () => {
 
         if (bitacora.tectura == '' || bitacora.color == '' || bitacora.ph == '' || bitacora.nitrogen == '' || bitacora.potassium == ''
@@ -73,9 +75,10 @@ const Suelo = () => {
             return;
         } else {
             const db = await getDbConnection();
-            if (bitacora.id == null) {
+            if (bitacora.id == -1) {
 
                 await insertSueloBitacora(db, bitacora);
+                
             } else {
 
                 await editBitacora(db, bitacora);
@@ -147,12 +150,33 @@ const Suelo = () => {
 
     // Función para manejar el botón de enviar
     const BotonEnviar = async (bitacora: any) => {
-        console.log("Enviando bitácora:", bitacora);
-        const db = await getDbConnection();
-        deleteBitacora(db, bitacora.id);
-        loadList();
 
-        //mandando a la API
+        try {
+;
+            console.log("Enviando bitácora:", bitacora);
+            const db = await getDbConnection();
+            const productor = await FindByIdProductor(db, bitacora.productor_id);
+            let bitacoraEnv = new BitacoraModelSend(bitacora, productor);
+            console.log("enviando"+bitacoraEnv);
+            const {data} = await sendBitacoraSuelo(bitacoraEnv);
+            console.log(data);
+            deleteBitacora(db, bitacora.id);
+            loadList();
+            showMessage({
+                message: "¡Éxito!",
+                description: "Productor creado con éxito.",
+                type: "success",
+            });
+        } catch (err) {
+            console.error(err);
+            showMessage({
+                message: "Error",
+                description: "Error al enviar la bitácora." + err,
+                type: "danger",
+            });
+        }
+
+
     };
 
     const loadList = async () => {

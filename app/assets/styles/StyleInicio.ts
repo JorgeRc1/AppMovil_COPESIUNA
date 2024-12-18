@@ -58,6 +58,7 @@ const StyleInicio = StyleSheet.create({
         backgroundColor: '#00A850',
         borderRadius: 5,
         marginTop: 10,
+        marginBottom: 15,
     },
 });
 

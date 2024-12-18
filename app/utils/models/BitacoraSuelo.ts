@@ -2,7 +2,7 @@
 
 // Modelo para el manejo de las bitacoras
  const BitacoraModel = {
-    id: null,
+    id: -1,
     tectura: '',
     color: '',
     ph: '',

@@ -1,7 +1,7 @@
 import React from 'react';
 import { ScrollView, View } from 'react-native';
 import { Card, Text, Button, Icon } from '@rneui/base';
-import StyleInicio from '@/assets/styles/StyleInicio';
+import StyleInicio from '../../assets/styles/StyleInicio';
 
 const Home = () => {
     return (
@@ -18,7 +18,7 @@ const Home = () => {
             </View>
 
 
-            {/* Card para Bitácoras de Suelos */}
+            {/* Card para Bitacoras de Suelos */}
             <Card containerStyle={StyleInicio.card}>
                 <View style={StyleInicio.cardHeader}>
                     <Icon name="terrain" type="material-icons" size={40} color="#00A850" />
@@ -33,7 +33,7 @@ const Home = () => {
                 />
             </Card>
 
-            {/* Card para Bitácoras de Cosechas */}
+            {/* Card para Bitacoras de Cosechas */}
             <Card containerStyle={StyleInicio.card}>
                 <View style={StyleInicio.cardHeader}>
                     <Icon name="corn" type="material-community" size={40} color="#00A850" />
@@ -48,7 +48,7 @@ const Home = () => {
                 />
             </Card>
 
-            {/* Card para Otros Datos */}
+            {/* Card para datos extras */}
             <Card containerStyle={StyleInicio.card}>
                 <View style={StyleInicio.cardHeader}>
                     <Icon name="chart-bar" type="material-community" size={40} color="#00A850" />
