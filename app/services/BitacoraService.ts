@@ -26,3 +26,7 @@ api.interceptors.request.use(
 export const sendBitacoraSuelo = (bitacora:any) => {
     return api.post('/api/loadmovil/create', bitacora);
 };
+
+export const getAsignacion = (id: number) => {
+    return api.get(`/api/asignacion/find/${id}`);
+}

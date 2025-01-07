@@ -1,6 +1,6 @@
 import * as SQLite from 'expo-sqlite'
-import BitacoraModel from './models/BitacoraSuelo';
-import productor from './models/ProductorModel';
+import BitacoraModel from '../models/BitacoraSuelo';
+import productor from '../models/ProductorModel';
 
 
 // Creando base de datos
@@ -22,11 +22,21 @@ export async function createTables(db: SQLite.SQLiteDatabase) {
   const queryProductor = `CREATE TABLE IF NOT EXISTS productor (
     id INTEGER PRIMARY KEY,
     nombre TEXT,
+    apellido TEXT,
     direccion TEXT,
     cedula TEXT,
-    fecha_create TEXT,
-    fecha_update TEXT
-)`;
+    tipo TEXT)`;
+
+
+  // crea tabla parcela con clave externa productor_id
+  const queryParcela = `CREATE TABLE IF NOT EXISTS parcela (
+    id INTEGER PRIMARY KEY,
+    nombre TEXT,
+    tamaño TEXT,
+    cultivo TEXT,
+    tipo Text,
+    id_productor INTEGER
+    )`;
 
   // Crea la tabla `bitacora` con clave externa productor_id
   const queryBitacora = `CREATE TABLE IF NOT EXISTS suelo (
@@ -45,13 +55,39 @@ export async function createTables(db: SQLite.SQLiteDatabase) {
         sulfate TEXT, 
         fecha_levantamiento TEXT, 
         fecha_laboratorio TEXT,
-        productor_id INTEGER,
-        FOREIGN KEY (productor_id) REFERENCES productor(id))` ;
+        productor_id INTEGER)` ;
 
-  await enableForeignKeys(db);
+  const queryAfectaciones = `CREATE TABLE IF NOT EXISTS afectaciones (
+        id INTEGER PRIMARY KEY,
+        nombre TEXT,
+        descripcion TEXT,
+        fecha_create TEXT,
+        fecha_update TEXT
+  )`;
+
+
   await db.runAsync(queryProductor);
+  await db.runAsync(queryParcela);
   await db.runAsync(queryBitacora);
+  await db.runAsync(queryAfectaciones);
 }
+
+export async function insertAfectacion(afectacion: any, db: SQLite.SQLiteDatabase) {
+  const query = `INSERT INTO afectaciones (id, nombre, descripcion, fecha_create, fecha_update) VALUES (${afectacion.id}, '${afectacion.nombre}', '${afectacion.descripcion}', '${afectacion.fecha_create}', '${afectacion.fecha_update}')`;
+  return await db.runAsync(query);
+  
+}
+
+export async function deleteAfectaciones(db: SQLite.SQLiteDatabase) {
+  const query = 'DELETE FROM afectaciones';
+  return await db.runAsync(query);
+}
+
+export async function getAfectaciones(db: SQLite.SQLiteDatabase) {
+  const query = 'SELECT * FROM afectaciones';
+  return await db.getAllAsync(query);
+}
+
 
 
 export async function insertSueloBitacora(db: SQLite.SQLiteDatabase, Bitacora: typeof BitacoraModel) {
@@ -94,38 +130,44 @@ export async function editBitacora(db: SQLite.SQLiteDatabase, updatedBitacora: t
 
 }
 
-export async function getProductores(db: SQLite.SQLiteDatabase){
-  const query = 'SELECT * FROM productor';
+export async function getProductoresSuelos(db: SQLite.SQLiteDatabase){
+  const query = 'SELECT * FROM productor WHERE tipo = "Analisis Fisico-Clinico de Suelo"';
   return await db.getAllAsync(query);
 }
 
-export async function loadProductores(db: SQLite.SQLiteDatabase){
- const query = 'DELETE FROM productor';
- await db.runAsync(query);
+export async function getProductoresCosecha(db: SQLite.SQLiteDatabase){
+  const query = 'SELECT * FROM productor WHERE tipo = "Estimacion de Cosecha"';
+  return await db.getAllAsync(query);
+}
 
- console.log('aqing product');
+export async function deleteProductores(db: SQLite.SQLiteDatabase){
+  const query = `DELETE FROM productor`;
+  await db.runAsync(query);
+}
 
- // Cargar los productores desde la API
- const queryIns = `INSERT INTO productor (id, nombre, direccion, cedula, fecha_create,  fecha_update) VALUES (1, 'Elton Cruz','ZAPOTE KUN', '610-110303-1002A', '20/11/2024', '20/11/2024')`;
- await db.runAsync(queryIns);
+export async function deleteParcelas(db: SQLite.SQLiteDatabase){
+  const query = `DELETE FROM parcela`;
+  await db.runAsync(query);
+}
 
- const queryIns1 = `INSERT INTO productor (id, nombre, direccion, cedula, fecha_create,  fecha_update) VALUES (2, 'Maynor Padilla','El Guineno', '610-140702-1000B', '20/11/2024', '20/11/2024')`;
- await db.runAsync(queryIns1);
-
- const queryIns2 = `INSERT INTO productor (id, nombre, direccion, cedula, fecha_create,  fecha_update) VALUES (3, 'Jhon Z','El Perol', '610-150588-2002Z', '20/11/2024', '20/11/2024')`;
- await db.runAsync(queryIns2);
+export async function getParcelas(db: SQLite.SQLiteDatabase){
+  const query = `SELECT * FROM parcela`;
+  return await db.getAllAsync(query);
 
 }
 
-export async function insertProductor(db: SQLite.SQLiteDatabase, Productor: typeof productor){
-  const date = new Date();
-  const randomId = Math.floor(Math.random() * -10000) - 1;
+export async function insertProductor(db: SQLite.SQLiteDatabase, Productor:any, tipo: string){
+  let id = Productor.id;
 
+  const query = `INSERT INTO productor (id, nombre, apellido, direccion, cedula, tipo) VALUES ('${id}', '${Productor.nombre}', '${Productor.apellido}', '${Productor.direccion}', '${Productor.cedula}', '${tipo}')`;
+  await db.runAsync(query);
 
-  const query = `INSERT INTO productor (id, nombre, direccion, cedula, fecha_create,  fecha_update) VALUES ('1', '${Productor.nombre}','${Productor.direccion}', '${Productor.cedula}', '${date.toLocaleDateString()}', '${date.toLocaleDateString()}')`;
+  for (let i = 0; i < Productor.parcelas.length; i++) {
+    
+    const queryParcela = `INSERT INTO parcela (id, nombre, tamaño, cultivo, tipo, id_productor) VALUES ('${Productor.parcelas[i].id}', '${Productor.parcelas[i].nombre}', '${Productor.parcelas[i].tamaño}', '${Productor.parcelas[i].cultivo}', '${Productor.parcelas[i].tipo.descripcion}', '${id}')`;
+    await db.runAsync(queryParcela);
+  }
 
-  const R = await db.runAsync(query);
-  console.log("productor creado:"+ R);
 }
 
 export async function FindByIdProductor(db: SQLite.SQLiteDatabase, id: number){

@@ -10,6 +10,7 @@ const StyleSuelo = StyleSheet.create({
         marginTop: 0,
 
     },
+
     ViewContent: {
         backgroundColor: "white"
     },

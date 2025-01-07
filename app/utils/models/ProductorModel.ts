@@ -1,10 +1,9 @@
 const productor = {
     id: null,
     nombre: '',
+    apellido: '',
     direccion: '',
     cedula: '',
-    fecha_create: '',
-    fecha_update: '',
   }
 
 export default productor;

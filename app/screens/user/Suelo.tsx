@@ -5,12 +5,11 @@ import { Input, ListItem, Button, Card } from '@rneui/base';
 import { Button as Modal, Dialog } from "@rneui/themed"
 import DropDownPicker from 'react-native-dropdown-picker';
 import StyleSuelo from "../../assets/styles/StyleSuelo";
-import { getDbConnection, insertSueloBitacora, getSuelosBitacora, deleteBitacora, editBitacora, getProductores, insertProductor, loadProductores, FindByIdProductor } from '../../utils/database/db'
+import { getDbConnection, insertSueloBitacora, getSuelosBitacora, deleteBitacora, editBitacora, getProductoresSuelos, insertProductor, FindByIdProductor } from '../../utils/database/db'
 import BitacoraModel from '../../utils/models/BitacoraSuelo'
 import ProductorModel from '../../utils/models/ProductorModel'
 import { showMessage } from "react-native-flash-message";
 import { sendBitacoraSuelo } from "@/app/services/BitacoraService";
-import BitacoraModelSend from "@/app/utils/models/BitacoraSueloSend";
 import productor from "../../utils/models/ProductorModel";
 
 
@@ -36,10 +35,13 @@ const Suelo = () => {
     useEffect(() => {
 
         async function cargarBitacoras() {
+            await loadProductores();
             const db = await getDbConnection();
             const Resultado: any = await getSuelosBitacora(db);
-            await loadProductores();
             setBitacoras(Resultado);
+            console.log("execute");
+
+
 
         }
         cargarBitacoras();
@@ -52,17 +54,16 @@ const Suelo = () => {
 
     const loadProductores = async () => {
         const db = await getDbConnection();
-        const Resultado: any = await getProductores(db);
-        const productoresData = Resultado.map(productor => ({
+        const Resultado: any = await getProductoresSuelos(db);
+        console.log("busqueda", Resultado);
+        const productoresData: { label: string; value: number }[] = Resultado.map((productor: { nombre: string; id: number }) => ({
             label: productor.nombre,
             value: productor.id
         }));
         setProductores(productoresData);
     }
 
-    const handleModalProductor = () => {
-        setModalProdVisible(!modalProdVisible);
-    };
+ 
 
     // Manejo del evento de presionar el botón para mostrar la modal
     const saveForm = async () => {
@@ -155,10 +156,7 @@ const Suelo = () => {
 ;
             console.log("Enviando bitácora:", bitacora);
             const db = await getDbConnection();
-            const productor = await FindByIdProductor(db, bitacora.productor_id);
-            let bitacoraEnv = new BitacoraModelSend(bitacora, productor);
-            console.log("enviando"+bitacoraEnv);
-            const {data} = await sendBitacoraSuelo(bitacoraEnv);
+            const {data} = await sendBitacoraSuelo(bitacora);
             console.log(data);
             deleteBitacora(db, bitacora.id);
             loadList();
@@ -221,32 +219,6 @@ const Suelo = () => {
         }
     }
 
-    const addProductor = async () => {
-        try {
-            if (productorF.nombre == '' || productorF.cedula == '' || productorF.direccion == '') {
-                alert('Todos los campos son obligatorios');
-                return;
-            }
-            const db = await getDbConnection();
-            await insertProductor(db, productorF);
-            setProductorF(ProductorModel);
-            handleModalProductor();
-            loadProductores();
-
-            showMessage({
-                message: "¡Éxito!",
-                description: "Productor creado con éxito.",
-                type: "success",
-            });
-        } catch (err) {
-            showMessage({
-                message: "Error",
-                description: "Hubo un problema al crear el productor.",
-                type: "danger",
-            });
-
-        }
-    }
 
     return (
 
@@ -269,17 +241,7 @@ const Suelo = () => {
                     >
                         <View style={StyleSuelo.ViewContent}>
                             <ListItem.Content>
-
-
-                                <Text style={StyleSuelo.textStyle}>Productor</Text>
-
-                                <View style={StyleSuelo.rowContainer}>
-
-                                    <Modal
-                                        title="+"
-                                        onPress={handleModalProductor}
-                                        buttonStyle={StyleSuelo.ButtonAdd}
-                                    />
+                     
                                     <DropDownPicker
                                         open={open}
                                         value={selectedProductor}
@@ -294,44 +256,9 @@ const Suelo = () => {
                                         placeholder="Selecciona un productor"
                                         placeholderStyle={{ color: "#86939E" }}
                                         style={StyleSuelo.StyleDropDownPicker}
+                                        textStyle={{fontSize: 18}}
 
                                     />
-
-
-                                </View>
-                                <Dialog
-                                    isVisible={modalProdVisible}
-                                    onBackdropPress={handleModalProductor}
-                                >
-                                    <Dialog.Title title="Agregar un productor" />
-                                    <Input
-                                        placeholder="Nombre"
-                                        onChangeText={value => handleChangeProduct('nombre', value)}
-                                        value={productorF.nombre}
-                                    />
-                                    <Input
-                                        placeholder="Direccion"
-                                        onChangeText={value => handleChangeProduct('direccion', value)}
-                                        value={productorF.direccion}
-                                    />
-                                    <Input
-                                        placeholder="Cedula"
-                                        onChangeText={value => handleChangeProduct('cedula', value)}
-                                        value={productorF.cedula}
-                                    />
-
-                                    <Dialog.Actions>
-                                        <Button
-                                            buttonStyle={StyleSuelo.enviarButton}
-                                            title="Agregar" onPress={addProductor} />
-                                        <Button title="Cancelar"
-                                            titleStyle={{ color: '#28A745' }}
-                                            type="clear" onPress={handleModalProductor} />
-
-                                    </Dialog.Actions>
-                                </Dialog>
-
-
 
                             </ListItem.Content>
                             <ListItem.Content >

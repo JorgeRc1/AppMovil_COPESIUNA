@@ -5,8 +5,12 @@ const setToken = async (token: string) => {
 }
 
 const getToken = async () => {
-    return await secureStore.getItem('access_token');
+
+    const token = await secureStore.getItem('access_token');
+    return token;
+
 }
+
 
 const setUser = async (user: any) => {
     await secureStore.setItem('user', user);
@@ -16,4 +20,4 @@ const getUser = async () => {
     return await secureStore.getItem('user');
 }
 
-export {setToken , getToken, setUser, getUser};
+export { setToken, getToken, setUser, getUser };

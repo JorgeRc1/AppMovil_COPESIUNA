@@ -4,7 +4,7 @@ import { StatusBar } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import AppNavigation from './components/AppNavigation';
 import { NavigationContainer, useNavigation } from "@react-navigation/native";
-import { getDbConnection, createTables, loadProductores } from './utils/database/db'
+import { getDbConnection, createTables,  } from './utils/database/db'
 import FlashMessage from "react-native-flash-message";
 
 
