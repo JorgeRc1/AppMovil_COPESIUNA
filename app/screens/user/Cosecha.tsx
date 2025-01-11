@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, ScrollView } from "react-native";
 import styleCosecha from "../../assets/styles/StyleCosecha";
 import { Input, ListItem, Button, Card, Icon } from '@rneui/base';
+import { Dialog } from '@rneui/themed';
 import { FAB } from '@rneui/themed';
 import DropDownPicker from 'react-native-dropdown-picker';
 
@@ -9,8 +10,10 @@ const Cosecha = () => {
     const [expanded, setExpanded] = React.useState(false);
     const [open, setOpen] = React.useState(false);
     const [visibleFAB, setVisibleFAB] = React.useState(true);
+    const [visibleModal, setVisibleModal] = React.useState(false);
 
     const [open1, setOpen1] = React.useState(false);
+    const [open2, setOpen2] = React.useState(false);
 
 
 
@@ -19,7 +22,9 @@ const Cosecha = () => {
     const [plants, setPlants] = React.useState<{ numeroPlanta: number; cantidadSanas: number }[]>([]);
     const [contador, setContador] = React.useState<number>(0);
 
-
+    const toggleDialog = () => {
+        setVisibleModal(!visibleModal);
+    };
 
     const handleAddPlant = () => {
         setContador(prev => prev + 1);
@@ -34,10 +39,10 @@ const Cosecha = () => {
         for (let i = index + 1; i < contador; i++) {
             console.log(updatedPlants[i - 1])
             updatedPlants[i - 1].numeroPlanta = i;
- 
+
 
         }
-        
+
         setPlants(updatedPlants);
 
 
@@ -104,7 +109,7 @@ const Cosecha = () => {
                             open={open1}
                             value={selectedProductor}
                             items={productores}
-                            setOpen={setOpen}
+                            setOpen={setOpen1}
                             setValue={(callback) => {
                                 const newValue = typeof callback === 'function' ? callback(selectedProductor) : callback;
                                 setSelectedProductor(newValue);
@@ -148,26 +153,82 @@ const Cosecha = () => {
 
                         {
                             plants.map((plant, index) => (
-                                <View style={styleCosecha.containerRow} >
-                                    <Icon
-                                        name='delete'
-                                        size={25}
-                                        color='red'
-                                        onPress={() => handleRemovePlant(index)}
-                                        style={{ marginLeft: 3 }}
+                                <View key={plant.numeroPlanta}>
 
-                                    />
-                                    <Text style={styleCosecha.textStyle}>Planta N° {plant.numeroPlanta}</Text>
-                                    <View style={{
-                                        width: '67%'
-                                    }}>
-                                        <Input style={styleCosecha.StyleInput}
-                                            keyboardType='numeric'
-                                            placeholder='Cantidad mazorcas sanas'
-                                            value={plant.cantidadSanas === 0 ? "" : String(plant.cantidadSanas)}
-                                            onChangeText={ value => hanldlerChangePLant(index, value) }
+                                    <View
+
+                                        style={styleCosecha.containerRow} >
+                                        <Icon
+                                            name='delete'
+                                            size={25}
+                                            color='red'
+                                            onPress={() => handleRemovePlant(index)}
+                                            style={{ marginLeft: 3 }}
+
                                         />
+                                        <Text style={styleCosecha.textStyle}>Planta N° {plant.numeroPlanta}</Text>
+
+                                        <View style={{
+                                            width: '67%'
+                                        }}>
+                                            <Input style={styleCosecha.StyleInput}
+                                                keyboardType='numeric'
+                                                placeholder='Cantidad mazorcas sanas'
+                                                value={plant.cantidadSanas === 0 ? "" : String(plant.cantidadSanas)}
+                                                onChangeText={value => hanldlerChangePLant(index, value)}
+                                            />
+                                        </View>
+
                                     </View>
+                                    <Text style={styleCosecha.textAfectaciones} >Lista de afectaciones</Text>
+                                    <View style={{ alignItems: 'center', }}>
+                                        <Button
+                                            title="Agregar afectacion"
+                                            type="solid"
+                                            buttonStyle={styleCosecha.buttonAfectacion}
+                                            titleStyle={{
+                                                color: '#FFFFFF',
+                                            }}
+                                            onPress={toggleDialog}
+                                        />
+
+                                        <Dialog
+                                            isVisible={visibleModal}
+                                            onBackdropPress={toggleDialog}
+                                        >
+                                            <Dialog.Title title="Modal de afectaciones" />
+                                            <DropDownPicker
+                                                open={open2}
+                                                value={selectedProductor}
+                                                items={productores}
+                                                setOpen={setOpen2}
+                                                setValue={(callback) => {
+                                                    const newValue = typeof callback === 'function' ? callback(selectedProductor) : callback;
+                                                    setSelectedProductor(newValue);
+                                                    handleChange('productor_id', newValue);
+                                                }}
+                                                setItems={setProductores}
+                                                placeholder="Selecciona la afectacion"
+                                                placeholderStyle={{ color: "#86939E" }}
+                                                style={styleCosecha.StyleDropDownPicker}
+                                                textStyle={{ fontSize: 18 }}
+
+                                            />
+
+                                            <Input placeholder='Cantidad de mazorcas' keyboardType='numeric'></Input>
+                                            <Dialog.Actions>
+                                                <Button
+                                                    type="clear"
+                                                    titleStyle={{ color: '#4CAF50' }}
+                                                    onPress={toggleDialog}
+                                                >
+                                                    Agregar
+                                                </Button>
+                                            </Dialog.Actions>
+                                        </Dialog>
+                                    </View>
+
+
 
                                 </View>
                             ))

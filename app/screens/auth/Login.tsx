@@ -301,7 +301,7 @@ if (isValidating) {
 
 
         <View style={StyleLogin.logoContainer}>
-          <Image source={require('../../assets/images/User.png')}
+          <Image source={require('../../assets/images/logo.jpg')}
             style={StyleLogin.img}
             resizeMode='contain'
           />

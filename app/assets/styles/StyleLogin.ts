@@ -7,15 +7,15 @@ const StyleLogin = StyleSheet.create({
         backgroundColor: "#00A850",
     },
     logoContainer: {
-        marginBottom: 20,
+        marginBottom: 0,
         justifyContent: 'center',
         alignItems: 'center',
     },
     img: {
         alignItems: 'center',
         justifyContent: 'center',
-        width: 200,
-        height: 200,
+        width: 250,
+        height: 250,
     },
     tarjeta: {
         margin: 20,

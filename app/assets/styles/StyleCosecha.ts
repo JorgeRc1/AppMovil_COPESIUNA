@@ -18,7 +18,7 @@ const styleCosecha = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         marginVertical: 5,
-        paddingBottom: 10,
+        paddingBottom: 0,
       },
     textContador: {
         fontSize: 15,
@@ -84,10 +84,23 @@ const styleCosecha = StyleSheet.create({
 
     },
     containerFAB: {
-    
         paddingTop: 25,
         backgroundColor: 'white'
     },
+    buttonAfectacion:{
+        backgroundColor: '#4CAF50',
+        borderRadius: 8,
+        paddingHorizontal: 20,
+        //width: "80%"
+    },
+    textAfectaciones: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#86939E',
+        textAlign: 'center',
+        marginBottom: 10,
+        textDecorationLine: 'underline',
+    }
 
 
 
