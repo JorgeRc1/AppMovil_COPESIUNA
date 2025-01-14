@@ -150,8 +150,8 @@ export async function deleteParcelas(db: SQLite.SQLiteDatabase){
   await db.runAsync(query);
 }
 
-export async function getParcelas(db: SQLite.SQLiteDatabase){
-  const query = `SELECT * FROM parcela`;
+export async function getParcelas(db: SQLite.SQLiteDatabase, idProductor:number){
+  const query = `SELECT * FROM parcela WHERE id_productor = '${idProductor}'`;
   return await db.getAllAsync(query);
 
 }

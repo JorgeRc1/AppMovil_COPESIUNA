@@ -35,7 +35,8 @@ const Login = ({ navigation }: { navigation: NavigationProp<any> }) => {
         setIsValidating(true);
       }
       //navigation.navigate('AppNavigation');
-    }
+      
+    } 
     validationToken();
 
   }, []);

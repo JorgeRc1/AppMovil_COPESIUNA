@@ -55,7 +55,6 @@ const Suelo = () => {
     const loadProductores = async () => {
         const db = await getDbConnection();
         const Resultado: any = await getProductoresSuelos(db);
-        console.log("busqueda", Resultado);
         const productoresData: { label: string; value: number }[] = Resultado.map((productor: { nombre: string; id: number }) => ({
             label: productor.nombre,
             value: productor.id

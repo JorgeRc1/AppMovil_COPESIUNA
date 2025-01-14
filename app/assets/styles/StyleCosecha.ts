@@ -88,6 +88,7 @@ const styleCosecha = StyleSheet.create({
         backgroundColor: 'white'
     },
     buttonAfectacion:{
+        marginTop: 12,
         backgroundColor: '#4CAF50',
         borderRadius: 8,
         paddingHorizontal: 20,
@@ -100,7 +101,11 @@ const styleCosecha = StyleSheet.create({
         textAlign: 'center',
         marginBottom: 10,
         textDecorationLine: 'underline',
-    }
+    },
+    tetxAfec:{
+        marginLeft: 10
+    },
+
 
 
 
