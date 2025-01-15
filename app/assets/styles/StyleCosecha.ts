@@ -35,6 +35,16 @@ const styleCosecha = StyleSheet.create({
         padding: 10,
         marginBottom: 0,
         backgroundColor: "white"
+        
+    },
+    ViewContentObject: {
+        flex: 1,
+        padding: 10,
+        marginBottom: 0,
+        backgroundColor: "white",
+        justifyContent: 'center',
+        alignItems: 'center',
+        
     },
 
     ViewRegistro: {
@@ -89,9 +99,12 @@ const styleCosecha = StyleSheet.create({
     },
     buttonAfectacion:{
         marginTop: 12,
-        backgroundColor: '#4CAF50',
+    
         borderRadius: 8,
+        marginBottom: 5,
+        borderWidth: 1.5,
         paddingHorizontal: 20,
+        borderColor: '#4CAF50'
         //width: "80%"
     },
     textAfectaciones: {
@@ -104,6 +117,12 @@ const styleCosecha = StyleSheet.create({
     },
     tetxAfec:{
         marginLeft: 10
+    },
+    ButtonStyle: {
+        backgroundColor: "#009933",
+        minWidth: '50%',
+        borderRadius: 10,
+
     },
 
 

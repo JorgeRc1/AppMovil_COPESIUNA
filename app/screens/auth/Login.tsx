@@ -20,8 +20,14 @@ const Login = ({ navigation }: { navigation: NavigationProp<any> }) => {
 
     async function validationToken() {
       // Obtener el token del storage si existe
-
-      const token: any = await getToken();
+      let token;
+      try{
+        let tokem_temp: any = await getToken();
+        token = tokem_temp;
+      } catch{
+        console.log('Error al obtener token');
+      }
+      
       if (token != 'none' && token != undefined) {
         const { exp } = jwtDecode(token);
         const currentTime = Math.floor(Date.now() / 1000);
@@ -34,9 +40,10 @@ const Login = ({ navigation }: { navigation: NavigationProp<any> }) => {
       else {
         setIsValidating(true);
       }
-      //navigation.navigate('AppNavigation');
+      //navigation.navigate('AppNavigation'); 
+      setIsValidating(true);
       
-    } 
+    }  
     validationToken();
 
   }, []);

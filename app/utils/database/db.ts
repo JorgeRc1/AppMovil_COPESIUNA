@@ -55,7 +55,8 @@ export async function createTables(db: SQLite.SQLiteDatabase) {
         sulfate TEXT, 
         fecha_levantamiento TEXT, 
         fecha_laboratorio TEXT,
-        productor_id INTEGER)` ;
+        productor_id INTEGER,
+        FOREIGN KEY (productor_id) REFERENCES productor(id) ON DELETE CASCADE)` ;
 
   const queryAfectaciones = `CREATE TABLE IF NOT EXISTS afectaciones (
         id INTEGER PRIMARY KEY,
@@ -65,17 +66,53 @@ export async function createTables(db: SQLite.SQLiteDatabase) {
         fecha_update TEXT
   )`;
 
+  const queryBitacoraCosecha = `CREATE TABLE IF NOT EXISTS cosecha (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        estadoClima TEXT,
+        fecha_created TEXT,
+        ID_parcela INTEGER,
+        edad TEXT,
+        ID_productor INTEGER,
+        FOREIGN KEY (ID_productor) REFERENCES productor(id) ON DELETE CASCADE)`;
 
+  const queryPlantas = `CREATE TABLE IF NOT EXISTS plantas (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          numeroPlanta INTEGER,
+          cantidadSanas INTEGER,
+          ID_bitacora INTEGER,
+          FOREIGN KEY (ID_bitacora) REFERENCES cosecha(id) ON DELETE CASCADE)`;
+
+
+
+
+  const queryAfectacion = `CREATE TABLE IF NOT EXISTS afectacion (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            ID_afectacion INTEGER,
+            ID_planta INTEGER,
+            FOREIGN KEY (ID_planta) REFERENCES plantas(id) ON DELETE CASCADE)`;
+
+  const queryMazorca = `CREATE TABLE IF NOT EXISTS mazorcas (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              ID_afectacion INTEGER,
+              cantidad INTEGER,
+              ID_planta INTEGER,
+              FOREIGN KEY (ID_planta) REFERENCES plantas(id) ON DELETE CASCADE)`;
+
+  await enableForeignKeys(db);
   await db.runAsync(queryProductor);
   await db.runAsync(queryParcela);
   await db.runAsync(queryBitacora);
   await db.runAsync(queryAfectaciones);
+  await db.runAsync(queryBitacoraCosecha);
+  await db.runAsync(queryPlantas);
+  await db.runAsync(queryAfectacion);
+  await db.runAsync(queryMazorca);
 }
 
 export async function insertAfectacion(afectacion: any, db: SQLite.SQLiteDatabase) {
   const query = `INSERT INTO afectaciones (id, nombre, descripcion, fecha_create, fecha_update) VALUES (${afectacion.id}, '${afectacion.nombre}', '${afectacion.descripcion}', '${afectacion.fecha_create}', '${afectacion.fecha_update}')`;
   return await db.runAsync(query);
-  
+
 }
 
 export async function deleteAfectaciones(db: SQLite.SQLiteDatabase) {
@@ -87,6 +124,66 @@ export async function getAfectaciones(db: SQLite.SQLiteDatabase) {
   const query = 'SELECT * FROM afectaciones';
   return await db.getAllAsync(query);
 }
+
+export async function insertCosechaBitacora(bitacora: any, db: SQLite.SQLiteDatabase) {
+  const date = new Date;
+
+  const query = `INSERT INTO cosecha (estadoClima, fecha_created, ID_parcela, edad, ID_productor) VALUES ('${bitacora.estadoClima}', '${date}', '${bitacora.ID_parcela}', '${bitacora.edad}', '${bitacora.ID_productor}')`;
+  let result = await db.runAsync(query);
+
+  return result.lastInsertRowId
+}
+
+export async function insertPlantas(planta: any, id_bitacora: number, db: SQLite.SQLiteDatabase) {
+  
+  const query = `INSERT INTO plantas (numeroPlanta, cantidadSanas, ID_bitacora) VALUES ('${planta.numeroPlanta}', '${planta.cantidadSanas}', '${id_bitacora}')`;
+  let result = await db.runAsync(query);
+
+  return result.lastInsertRowId
+}
+
+export async function insertAfectaciones(afectacion: any, id_planta: number, db: SQLite.SQLiteDatabase) {
+  
+  const query = `INSERT INTO afectacion (ID_afectacion, ID_planta) VALUES ('${afectacion.ID_afectacion}', '${id_planta}')`;
+  return await db.runAsync(query);
+
+}
+
+export async function insertMazorca(mazorca: any, id_planta: number, db: SQLite.SQLiteDatabase) {
+  const query = `INSERT INTO mazorcas (ID_afectacion,cantidad, ID_planta) VALUES ('${mazorca.ID_afectacion}', '${mazorca.cantidad}','${id_planta}')`;
+  return await db.runAsync(query);
+
+}
+
+export async function getAfectacion(db: SQLite.SQLiteDatabase) {
+
+  const query = `SELECT * FROM afectacion`;
+  return await db.getAllAsync(query);
+
+}
+
+
+export async function getMazorcas(db: SQLite.SQLiteDatabase) {
+
+  const query = `SELECT * FROM mazorcas`;
+  return await db.getAllAsync(query);
+
+}
+
+export async function getCosechaBitacora(db: SQLite.SQLiteDatabase) {
+
+  const query = `SELECT * FROM cosecha`;
+  return await db.getAllAsync(query);
+
+}
+
+export async function getPlantas(db: SQLite.SQLiteDatabase) {
+
+  const query = `SELECT * FROM plantas`;
+  return await db.getAllAsync(query);
+
+}
+
 
 
 
@@ -130,47 +227,47 @@ export async function editBitacora(db: SQLite.SQLiteDatabase, updatedBitacora: t
 
 }
 
-export async function getProductoresSuelos(db: SQLite.SQLiteDatabase){
+export async function getProductoresSuelos(db: SQLite.SQLiteDatabase) {
   const query = 'SELECT * FROM productor WHERE tipo = "Analisis Fisico-Clinico de Suelo"';
   return await db.getAllAsync(query);
 }
 
-export async function getProductoresCosecha(db: SQLite.SQLiteDatabase){
+export async function getProductoresCosecha(db: SQLite.SQLiteDatabase) {
   const query = 'SELECT * FROM productor WHERE tipo = "Estimacion de Cosecha"';
   return await db.getAllAsync(query);
 }
 
-export async function deleteProductores(db: SQLite.SQLiteDatabase){
+export async function deleteProductores(db: SQLite.SQLiteDatabase) {
   const query = `DELETE FROM productor`;
   await db.runAsync(query);
 }
 
-export async function deleteParcelas(db: SQLite.SQLiteDatabase){
+export async function deleteParcelas(db: SQLite.SQLiteDatabase) {
   const query = `DELETE FROM parcela`;
   await db.runAsync(query);
 }
 
-export async function getParcelas(db: SQLite.SQLiteDatabase, idProductor:number){
+export async function getParcelas(db: SQLite.SQLiteDatabase, idProductor: number) {
   const query = `SELECT * FROM parcela WHERE id_productor = '${idProductor}'`;
   return await db.getAllAsync(query);
 
 }
 
-export async function insertProductor(db: SQLite.SQLiteDatabase, Productor:any, tipo: string){
+export async function insertProductor(db: SQLite.SQLiteDatabase, Productor: any, tipo: string) {
   let id = Productor.id;
 
   const query = `INSERT INTO productor (id, nombre, apellido, direccion, cedula, tipo) VALUES ('${id}', '${Productor.nombre}', '${Productor.apellido}', '${Productor.direccion}', '${Productor.cedula}', '${tipo}')`;
   await db.runAsync(query);
 
   for (let i = 0; i < Productor.parcelas.length; i++) {
-    
+
     const queryParcela = `INSERT INTO parcela (id, nombre, tamaño, cultivo, tipo, id_productor) VALUES ('${Productor.parcelas[i].id}', '${Productor.parcelas[i].nombre}', '${Productor.parcelas[i].tamaño}', '${Productor.parcelas[i].cultivo}', '${Productor.parcelas[i].tipo.descripcion}', '${id}')`;
     await db.runAsync(queryParcela);
   }
 
 }
 
-export async function FindByIdProductor(db: SQLite.SQLiteDatabase, id: number){
+export async function FindByIdProductor(db: SQLite.SQLiteDatabase, id: number) {
   const query = `SELECT * FROM productor WHERE id = '${id}'`;
   return await db.runAsync(query);
 }

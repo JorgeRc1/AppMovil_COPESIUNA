@@ -3,9 +3,12 @@ import { View, Text, FlatList } from "react-native";
 import styleCosecha from "../../assets/styles/StyleCosecha";
 import { Input, ListItem, Button, Card, Icon } from '@rneui/base';
 import { Dialog } from '@rneui/themed';
+import { Button as Modal } from "@rneui/themed"
 import { FAB } from '@rneui/themed';
 import DropDownPicker from 'react-native-dropdown-picker';
-import { getDbConnection, getParcelas, getProductoresCosecha, getAfectaciones } from "@/app/utils/database/db";
+import { getDbConnection, getParcelas, getProductoresCosecha, getAfectaciones, 
+    insertCosechaBitacora, getCosechaBitacora, getPlantas, insertPlantas, insertAfectaciones, 
+    getAfectacion, insertMazorca, getMazorcas} from "@/app/utils/database/db";
 import BitacoraCosecha from "@/app/utils/models/BitacoraCosecha";
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 
@@ -14,6 +17,7 @@ const Cosecha = () => {
     const [open, setOpen] = React.useState(false);
     const [visibleFAB, setVisibleFAB] = React.useState(true);
     const [visibleModal, setVisibleModal] = React.useState(false);
+    const [visibleModal1, setVisibleModal1] = React.useState(false);
 
     const [open1, setOpen1] = React.useState(false);
     const [open2, setOpen2] = React.useState(false);
@@ -98,15 +102,15 @@ const Cosecha = () => {
                 let cantidad: number = parseInt(cantidaMazorcas, 10);
                 let nuevaAfectacion = { ID_afectacion: selectedAfectacion, cantidad: cantidad };
                 updatePlantas[indexPlant].mazorcas.push(nuevaAfectacion);
-            
-                
+
+
             }
         } else {
             const updatePlantas = { ...plants };
             if (selectedAfectacion !== null) {
                 let nuevaAfectacion = { ID_afectacion: selectedAfectacion };
                 updatePlantas[indexPlant].afectacion.push(nuevaAfectacion);
-                
+
             }
         }
         setCantidadMazorcas("");
@@ -166,28 +170,28 @@ const Cosecha = () => {
     };
 
     const handleRemoveAfectacion = (plantIndex: number, afectacionId: number) => {
-    
+
         const updatedPlants = [...plants];
 
         updatedPlants[plantIndex].afectacion = updatedPlants[plantIndex].afectacion.filter(
-          (afect) => afect.ID_afectacion !== afectacionId
+            (afect) => afect.ID_afectacion !== afectacionId
         );
-      
+
 
         setPlants(updatedPlants);
-      };
+    };
 
-      const handleRemoveMazorca = (plantIndex: number, afectacionId: number) => {
-    
+    const handleRemoveMazorca = (plantIndex: number, afectacionId: number) => {
+
         const updatedPlants = [...plants];
 
         updatedPlants[plantIndex].mazorcas = updatedPlants[plantIndex].mazorcas.filter(
-          (mazorca) => mazorca.ID_afectacion !== afectacionId
+            (mazorca) => mazorca.ID_afectacion !== afectacionId
         );
-      
+
 
         setPlants(updatedPlants);
-      };
+    };
 
 
     const handleChangeF = (key: string, value: any) => {
@@ -206,252 +210,327 @@ const Cosecha = () => {
         })); */
     };
 
+    const closeModal = () => {
+        setVisibleModal1(!visibleModal1!);
+    }
+
+
+    // Manejo del evento de presionar el botón para mostrar la modal
+    const saveForm = async () => {
+
+        if (bitacora.edad == '' || bitacora.estadoClima == '' || plants.length == 0) {
+            alert('Todos los campos son obligatorios');
+            return;
+        } else {
+            const db = await getDbConnection();
+            let idBitacora = await insertCosechaBitacora(bitacora, db);
+            bitacora.plantas = plants;
+            for (let i = 0; i < plants.length; i++) {
+                let plant = plants[i];
+                let idPlanta = await insertPlantas(plant,idBitacora, db);
+                for (let j = 0; j < plant.afectacion.length; j++) {
+                    let afectacion = plant.afectacion[j];
+                    await insertAfectaciones(afectacion, idPlanta, db)
+
+                }
+                for (let e = 0; e < plant.mazorcas.length; e++) {
+                    let mazorca = plant.mazorcas[e];
+                    await insertMazorca(mazorca, idPlanta, db)
+                }
+            }
+
+            /*
+            let result = await getPlantas(db);
+            let afec = awaitgetAfectacion(db);
+            let mazorca = await getMazorcas(db);
+            console.log(result);
+            console.log("\n afectaciones", afec);
+            console.log("\nmazorcas", mazorca);
+    
+*/
+            
+
+            setVisibleModal1(!visibleModal1);
+        }
+
+    };
+
 
 
 
     return (
         <FlatList
             ListHeaderComponent={
-                <ListItem.Accordion
-                    style={styleCosecha.StyleItem}
-                    content={
-                        <ListItem.Content>
-                            <ListItem.Title>Realizar Estimación</ListItem.Title>
-                            <ListItem.Subtitle>Presiona para abrir el formulario</ListItem.Subtitle>
-                        </ListItem.Content>
-                    }
-                    isExpanded={expanded}
-                    onPress={() => {
-                        setExpanded(!expanded);
-                    }}
-                >
+                <View>
+                    <ListItem.Accordion
+                        style={styleCosecha.StyleItem}
+                        content={
+                            <ListItem.Content>
+                                <ListItem.Title>Realizar Estimación</ListItem.Title>
+                                <ListItem.Subtitle>Presiona para abrir el formulario</ListItem.Subtitle>
+                            </ListItem.Content>
+                        }
+                        isExpanded={expanded}
+                        onPress={() => {
+                            setExpanded(!expanded);
+                        }}
+                    >
 
-                    <View style={styleCosecha.ViewContent}>
+                        <View style={styleCosecha.ViewContent}>
 
-                        <ListItem.Content>
-                            <View style={{ marginBottom: open ? 30 * productores.length : 0 }}>
-                                <DropDownPicker
-                                    open={open}
-                                    value={selectedProductor}
-                                    items={productores}
-                                    setOpen={setOpen}
-                                    setValue={(callback) => {
-                                        const newValue = typeof callback === 'function' ? callback(selectedProductor) : callback;
-                                        setSelectedProductor(newValue);
-                                        handleChangeP('ID_productor', newValue);
-                                    }}
-                                    setItems={setProductores}
-                                    placeholder="Selecciona un productor"
-                                    placeholderStyle={{ color: "#86939E" }}
-                                    style={styleCosecha.StyleDropDownPicker}
-                                    textStyle={{ fontSize: 18 }}
+                            <ListItem.Content>
+                                <View style={{ marginBottom: open ? 30 * productores.length : 0 }}>
+                                    <DropDownPicker
+                                        open={open}
+                                        value={selectedProductor}
+                                        items={productores}
+                                        setOpen={setOpen}
+                                        setValue={(callback) => {
+                                            const newValue = typeof callback === 'function' ? callback(selectedProductor) : callback;
+                                            setSelectedProductor(newValue);
+                                            handleChangeP('ID_productor', newValue);
+                                        }}
+                                        setItems={setProductores}
+                                        placeholder="Selecciona un productor"
+                                        placeholderStyle={{ color: "#86939E" }}
+                                        style={styleCosecha.StyleDropDownPicker}
+                                        textStyle={{ fontSize: 18 }}
 
-                                />
-                            </View>
+                                    />
+                                </View>
 
-                        </ListItem.Content>
-
-
-                        <ListItem.Content >
+                            </ListItem.Content>
 
 
-                            <Input style={styleCosecha.StyleList}
-                                placeholder='Estado del clima'
-                                onChangeText={value => handleChange('estadoClima', value)}
-                                value={bitacora.estadoClima}
+                            <ListItem.Content >
 
-                            />
 
-                        </ListItem.Content>
-                        <ListItem.Content >
-
-                            <Input style={styleCosecha.StyleList}
-                                placeholder='Edad'
-                                onChangeText={value => handleChange('edad', value)}
-                                value={bitacora.edad}
-
-                            />
-                        </ListItem.Content>
-                        <ListItem.Content>
-                            <View style={{ marginBottom: open1 ? 25 * parcelas.length : 0 }}>
-                                <DropDownPicker
-                                    open={open1}
-                                    value={selectedParcela}
-                                    items={parcelas}
-                                    setOpen={setOpen1}
-                                    setValue={(callback) => {
-                                        const newValue = typeof callback === 'function' ? callback(selectedParcela) : callback;
-                                        setSelectedParcela(newValue);
-                                        handleChange('ID_parcela', newValue);
-                                    }}
-                                    setItems={setParcelas}
-                                    placeholder="Parcela"
-                                    placeholderStyle={{ color: "#86939E" }}
-                                    style={styleCosecha.StyleDropDownPicker}
-                                    textStyle={{ fontSize: 18 }}
-
+                                <Input style={styleCosecha.StyleList}
+                                    placeholder='Estado del clima'
+                                    onChangeText={value => handleChange('estadoClima', value)}
+                                    value={bitacora.estadoClima}
 
                                 />
-                            </View>
 
-                        </ListItem.Content>
+                            </ListItem.Content>
+                            <ListItem.Content >
 
-                        <ListItem.Content >
-                            <View style={styleCosecha.containerRow}>
-                                <Text style={styleCosecha.textRegistro}>Registro de plantas</Text>
-                                <Text style={styleCosecha.textContador}>{contador}</Text>
-                            </View>
+                                <Input style={styleCosecha.StyleList}
+                                    placeholder='Edad'
+                                    onChangeText={value => handleChange('edad', value)}
+                                    value={bitacora.edad}
 
-                        </ListItem.Content>
+                                />
+                            </ListItem.Content>
+                            <ListItem.Content>
+                                <View style={{ marginBottom: open1 ? 25 * parcelas.length : 0 }}>
+                                    <DropDownPicker
+                                        open={open1}
+                                        value={selectedParcela}
+                                        items={parcelas}
+                                        setOpen={setOpen1}
+                                        setValue={(callback) => {
+                                            const newValue = typeof callback === 'function' ? callback(selectedParcela) : callback;
+                                            setSelectedParcela(newValue);
+                                            handleChange('ID_parcela', newValue);
+                                        }}
+                                        setItems={setParcelas}
+                                        placeholder="Parcela"
+                                        placeholderStyle={{ color: "#86939E" }}
+                                        style={styleCosecha.StyleDropDownPicker}
+                                        textStyle={{ fontSize: 18 }}
 
-                        <ListItem.Content >
 
-                            {
-                                plants.map((plant, indexP) => (
+                                    />
+                                </View>
 
-                                    <View key={plant.numeroPlanta}>
+                            </ListItem.Content>
 
-                                        <View
+                            <ListItem.Content >
+                                <View style={styleCosecha.containerRow}>
+                                    <Text style={styleCosecha.textRegistro}>Registro de plantas</Text>
+                                    <Text style={styleCosecha.textContador}>{contador}</Text>
+                                </View>
 
-                                            style={styleCosecha.containerRow} >
-                                            <Icon
-                                                name='delete'
-                                                size={25}
-                                                color='red'
-                                                onPress={() => handleRemovePlant(indexP)}
-                                                style={{ marginLeft: 3 }}
+                            </ListItem.Content>
 
-                                            />
-                                            <Text style={styleCosecha.textStyle}>Planta N° {plant.numeroPlanta}</Text>
+                            <ListItem.Content >
 
-                                            <View style={{
-                                                width: '67%'
-                                            }}>
-                                                <Input style={styleCosecha.StyleInput}
-                                                    keyboardType='numeric'
-                                                    placeholder='Cantidad mazorcas sanas'
-                                                    value={plant.cantidadSanas === 0 ? "" : String(plant.cantidadSanas)}
-                                                    onChangeText={value => hanldlerChangePLant(indexP, value)}
+                                {
+                                    plants.map((plant, indexP) => (
+
+                                        <View key={plant.numeroPlanta}>
+
+                                            <View
+
+                                                style={styleCosecha.containerRow} >
+                                                <Icon
+                                                    name='delete'
+                                                    size={25}
+                                                    color='red'
+                                                    onPress={() => handleRemovePlant(indexP)}
+                                                    style={{ marginLeft: 3 }}
+
                                                 />
+                                                <Text style={styleCosecha.textStyle}>Planta N° {plant.numeroPlanta}</Text>
+
+                                                <View style={{
+                                                    width: '67%'
+                                                }}>
+                                                    <Input style={styleCosecha.StyleInput}
+                                                        keyboardType='numeric'
+                                                        placeholder='Cantidad mazorcas sanas'
+                                                        value={plant.cantidadSanas === 0 ? "" : String(plant.cantidadSanas)}
+                                                        onChangeText={value => hanldlerChangePLant(indexP, value)}
+                                                    />
+                                                </View>
+
+                                            </View>
+                                            <Text style={styleCosecha.textAfectaciones} >Lista de afectaciones</Text>
+
+                                            {
+                                                plant.afectacion.map((afect, index) => (
+                                                    <View key={index}>
+
+                                                        <View
+
+                                                            style={styleCosecha.containerRow} >
+
+                                                            <FontAwesome name="minus-circle" size={28} color="red" onPress={() => handleRemoveAfectacion(indexP, afect.ID_afectacion)} />
+
+                                                            <Text style={styleCosecha.tetxAfec}>{afectacion.find(item => item.value === afect.ID_afectacion)?.label || ''}</Text>
+                                                        </View>
+                                                    </View>
+                                                ))
+                                            }
+
+                                            {
+                                                plant.mazorcas.map((mazorca, index) => (
+                                                    <View key={index}>
+
+                                                        <View
+
+                                                            style={styleCosecha.containerRow} >
+
+                                                            <FontAwesome name="minus-circle" size={28} color="red" onPress={() => handleRemoveMazorca(indexP, mazorca.ID_afectacion)} />
+
+                                                            <Text style={styleCosecha.tetxAfec}>{afectacion.find(item => item.value === mazorca.ID_afectacion)?.label || ''} cantidad: {mazorca.cantidad}</Text>
+                                                        </View>
+                                                    </View>
+                                                ))
+                                            }
+                                            <View style={{ alignItems: 'center', }}>
+                                                <Button
+                                                    title="Agregar afectacion"
+                                                    type="outline"
+                                                    buttonStyle={styleCosecha.buttonAfectacion}
+                                                    titleStyle={{
+                                                        color: '#4CAF50',
+                                                        fontWeight: 'bold'
+                                                    }}
+                                                    onPress={() => toggleDialogOpen(indexP)}
+                                                />
+
+                                                <Dialog
+                                                    isVisible={visibleModal}
+                                                    onBackdropPress={toggleDialog}
+                                                >
+                                                    <Dialog.Title title="Modal de afectaciones" />
+                                                    <DropDownPicker
+                                                        open={open2}
+                                                        value={selectedAfectacion}
+                                                        items={afectacion}
+                                                        setOpen={setOpen2}
+                                                        setValue={(callback) => {
+                                                            const newValue = typeof callback === 'function' ? callback(selectedAfectacion) : callback;
+                                                            setSelectedAfectacion(newValue);
+                                                            handleChangeF('productor_id', newValue);
+                                                        }}
+                                                        setItems={setAfectacion}
+                                                        placeholder="Selecciona la afectacion"
+                                                        placeholderStyle={{ color: "#86939E" }}
+                                                        style={styleCosecha.StyleDropDownPicker}
+                                                        textStyle={{ fontSize: 18 }}
+
+                                                    />
+
+                                                    {showInput && (
+                                                        <Input
+                                                            placeholder='Cantidad de mazorcas'
+                                                            keyboardType='numeric'
+                                                            value={cantidaMazorcas}
+                                                            onChangeText={value => setCantidadMazorcas(value)}
+                                                        />
+                                                    )}
+                                                    <Dialog.Actions>
+                                                        <Button
+                                                            type="clear"
+                                                            titleStyle={{ color: '#4CAF50' }}
+                                                            onPress={() => toggleDialogSave()}
+                                                        >
+                                                            Agregar
+                                                        </Button>
+                                                    </Dialog.Actions>
+                                                </Dialog>
                                             </View>
 
+
+
                                         </View>
-                                        <Text style={styleCosecha.textAfectaciones} >Lista de afectaciones</Text>
+                                    ))
+                                }
 
-                                        {
-                                            plant.afectacion.map((afect, index) => (
-                                                <View key={index}>
-
-                                                    <View
-
-                                                        style={styleCosecha.containerRow} >
-
-                                                        <FontAwesome name="minus-circle" size={28} color="red" onPress={ () => handleRemoveAfectacion(indexP, afect.ID_afectacion)} />
-
-                                                        <Text style={styleCosecha.tetxAfec}>{afectacion.find(item => item.value === afect.ID_afectacion)?.label || ''}</Text>
-                                                    </View>
-                                                </View>
-                                            ))
-                                        }
-
-                                        {
-                                            plant.mazorcas.map((mazorca, index) => (
-                                                <View key={index}>
-
-                                                    <View
-
-                                                        style={styleCosecha.containerRow} >
-
-                                                        <FontAwesome name="minus-circle" size={28} color="red" onPress={ () => handleRemoveMazorca(indexP, mazorca.ID_afectacion)} />
-
-                                                        <Text style={styleCosecha.tetxAfec}>{afectacion.find(item => item.value === mazorca.ID_afectacion)?.label || ''} cantidad: {mazorca.cantidad}</Text>
-                                                    </View>
-                                                </View>
-                                            ))
-                                        }
-                                        <View style={{ alignItems: 'center', }}>
-                                            <Button
-                                                title="Agregar afectacion"
-                                                type="solid"
-                                                buttonStyle={styleCosecha.buttonAfectacion}
-                                                titleStyle={{
-                                                    color: '#FFFFFF',
-                                                }}
-                                                onPress={ ()=> toggleDialogOpen(indexP)}
-                                            />
-
-                                            <Dialog
-                                                isVisible={visibleModal}
-                                                onBackdropPress={toggleDialog}
-                                            >
-                                                <Dialog.Title title="Modal de afectaciones" />
-                                                <DropDownPicker
-                                                    open={open2}
-                                                    value={selectedAfectacion}
-                                                    items={afectacion}
-                                                    setOpen={setOpen2}
-                                                    setValue={(callback) => {
-                                                        const newValue = typeof callback === 'function' ? callback(selectedAfectacion) : callback;
-                                                        setSelectedAfectacion(newValue);
-                                                        handleChangeF('productor_id', newValue);
-                                                    }}
-                                                    setItems={setAfectacion}
-                                                    placeholder="Selecciona la afectacion"
-                                                    placeholderStyle={{ color: "#86939E" }}
-                                                    style={styleCosecha.StyleDropDownPicker}
-                                                    textStyle={{ fontSize: 18 }}
-
-                                                />
-
-                                                {showInput && (
-                                                    <Input
-                                                        placeholder='Cantidad de mazorcas'
-                                                        keyboardType='numeric'
-                                                        value={cantidaMazorcas}
-                                                        onChangeText={value => setCantidadMazorcas(value)}
-                                                    />
-                                                )}
-                                                <Dialog.Actions>
-                                                    <Button
-                                                        type="clear"
-                                                        titleStyle={{ color: '#4CAF50' }}
-                                                        onPress={() => toggleDialogSave()}
-                                                    >
-                                                        Agregar
-                                                    </Button>
-                                                </Dialog.Actions>
-                                            </Dialog>
-                                        </View>
+                            </ListItem.Content>
 
 
+                        </View>
+                        <View style={styleCosecha.containerFAB}>
 
-                                    </View>
-                                ))
-                            }
+                            <FAB
+                                visible={visibleFAB}
+                                icon={{ name: 'add', color: 'white' }}
+                                color="green"
+                                placement="right"
+                                onPress={handleAddPlant}
 
-                        </ListItem.Content>
+                            />
+                        </View>
+                        <View style={styleCosecha.ViewContentObject}>
 
 
+                            <Modal
+                                title="Estimar cosecha"
+                                onPress={saveForm}
+                                buttonStyle={styleCosecha.ButtonStyle}
+                            />
+
+                            <Dialog
+                                isVisible={visibleModal1}
+                                onBackdropPress={closeModal}
+
+                            >
+                                <Dialog.Title title="Resultados" />
+                                <Text>Aun no tenemos Resultados</Text>
+                                <Dialog.Actions>
+                                    <Button title="Aceptar" type="clear"
+                                    //  onPress={() => ShowNewBitacora()}
+                                    />
+                                </Dialog.Actions>
+                            </Dialog>
+
+                        </View>
+
+                    </ListItem.Accordion>
+                    <View style={styleCosecha.textContainerView}>
+                        <Text style={styleCosecha.textDivider}>
+                            Lista de Bitácoras
+                        </Text>
+                        <View style={styleCosecha.divider} />
                     </View>
-                    <View style={styleCosecha.containerFAB}>
-
-                        <FAB
-                            visible={visibleFAB}
-                            icon={{ name: 'add', color: 'white' }}
-                            color="green"
-                            placement="right"
-                            onPress={handleAddPlant}
-
-                        />
-                    </View>
-                    <View style={styleCosecha.ViewContent}>
-                        <Text>Hola</Text>
-                    </View>
+                    
+                </View>
 
 
-
-
-                </ListItem.Accordion>
             }
         />
 
