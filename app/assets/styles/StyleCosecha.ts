@@ -124,6 +124,30 @@ const styleCosecha = StyleSheet.create({
         borderRadius: 10,
 
     },
+    cardContainer: {
+        borderRadius: 8,
+        padding: 10,
+        marginBottom: 10,
+    },
+    detailText: {
+        fontSize: 14,
+        color: '#333',
+        marginTop: 5,
+    },
+    buttonContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginTop: 10,
+    },
+    enviarButton: {
+        backgroundColor: '#009933',
+    },
+    editarButton: {
+        borderColor: '#28A745',
+    },
+    editButtonContainer: {
+        marginLeft: 10,
+    },
 
 
 

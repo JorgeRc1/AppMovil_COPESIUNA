@@ -155,17 +155,17 @@ export async function insertMazorca(mazorca: any, id_planta: number, db: SQLite.
 
 }
 
-export async function getAfectacion(db: SQLite.SQLiteDatabase) {
+export async function getAfectacionById(id:number,db: SQLite.SQLiteDatabase) {
 
-  const query = `SELECT * FROM afectacion`;
+  const query = `SELECT * FROM afectacion WHERE id = '${id}'`;
   return await db.getAllAsync(query);
 
 }
 
 
-export async function getMazorcas(db: SQLite.SQLiteDatabase) {
+export async function getMazorcasById(id:number,db: SQLite.SQLiteDatabase) {
 
-  const query = `SELECT * FROM mazorcas`;
+  const query = `SELECT * FROM mazorcas WHERE id ='${id}'`;
   return await db.getAllAsync(query);
 
 }
@@ -177,9 +177,9 @@ export async function getCosechaBitacora(db: SQLite.SQLiteDatabase) {
 
 }
 
-export async function getPlantas(db: SQLite.SQLiteDatabase) {
+export async function getPlantasById(id:number, db: SQLite.SQLiteDatabase) {
 
-  const query = `SELECT * FROM plantas`;
+  const query = `SELECT * FROM plantas WHERE ID_bitacora = '${id}'`;
   return await db.getAllAsync(query);
 
 }

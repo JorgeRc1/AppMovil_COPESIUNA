@@ -6,10 +6,12 @@ import { Dialog } from '@rneui/themed';
 import { Button as Modal } from "@rneui/themed"
 import { FAB } from '@rneui/themed';
 import DropDownPicker from 'react-native-dropdown-picker';
-import { getDbConnection, getParcelas, getProductoresCosecha, getAfectaciones, 
-    insertCosechaBitacora, getCosechaBitacora, getPlantas, insertPlantas, insertAfectaciones, 
-    getAfectacion, insertMazorca, getMazorcas} from "@/app/utils/database/db";
-import BitacoraCosecha from "@/app/utils/models/BitacoraCosecha";
+import {
+    getDbConnection, getParcelas, getProductoresCosecha, getAfectaciones,
+    insertCosechaBitacora, getCosechaBitacora, getPlantasById, insertPlantas, insertAfectaciones,
+    getAfectacionById, insertMazorca, getMazorcasById
+} from "@/app/utils/database/db";
+import BitacoraCosechaDB from "@/app/utils/models/BitacoraCosechaDB";
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 
 const Cosecha = () => {
@@ -34,14 +36,17 @@ const Cosecha = () => {
     const [afectacion, setAfectacion] = React.useState<any[]>([]);
 
     const [plants, setPlants] = React.useState<{
+        id: number;
         numeroPlanta: number;
         cantidadSanas: number;
-        afectacion: { ID_afectacion: number }[];
-        mazorcas: { ID_afectacion: number; cantidad: number }[];
+        ID_bitacora: number;
+        afectacion: { id: number, ID_planta: number; ID_afectacion: number }[];
+        mazorcas: { id: number, ID_planta: number; ID_afectacion: number; cantidad: number }[];
     }[]>([]);
 
 
-    const [bitacora, setBitacora] = React.useState(BitacoraCosecha);
+    const [bitacora, setBitacora] = React.useState(BitacoraCosechaDB);
+    const [bitacoras, setBitacoras] = React.useState<typeof BitacoraCosechaDB[]>([]);
     const [contador, setContador] = React.useState<number>(0);
     const [indexPlant, setIndexPlant] = React.useState<number>(0);
     const [cantidaMazorcas, setCantidadMazorcas] = React.useState<string>("");
@@ -52,6 +57,7 @@ const Cosecha = () => {
             const db = await getDbConnection();
             await loadProductores();
             await loadAfectaciones();
+            await loadBitacoras();
 
         }
         loadData();
@@ -67,6 +73,32 @@ const Cosecha = () => {
         setProductores(productoresData);
     }
 
+    const loadBitacoras = async () => {
+        const db = await getDbConnection();
+        setBitacoras([]);
+        const BitacoraList: any = await getCosechaBitacora(db);
+        let list = [];
+        for (let i = 0; i < BitacoraList.length; i++) {
+            let model: typeof BitacoraCosechaDB;
+            model = BitacoraList[i];
+            let plantas: any = await getPlantasById(model.id, db);
+            let modelPlantas: typeof plants;
+            modelPlantas = plantas;
+
+            for (let e = 0; e < plantas.length; e++) {
+                let modelPlant = plantas[e];
+                let afectaciones: any = await getAfectacionById(modelPlant.id.ID_afectacion, db);
+                let mazorcas: any = await getMazorcasById(modelPlant.ID_afectacion, db);
+                modelPlant.afectacion = afectaciones;
+                modelPlant.mazorcas = mazorcas;
+
+            }
+            model.plantas = modelPlantas;
+            list.push(model);
+        }
+        setBitacoras(list);
+
+    }
     const loadParcela = async (id: number) => {
         const db = await getDbConnection();
         const Resultado: any = await getParcelas(db, id);
@@ -88,6 +120,36 @@ const Cosecha = () => {
         setAfectacion(afectacionData);
     }
 
+    const reducerList = () => {
+        setExpanded(false);
+
+    }
+
+    const cleanForm = () => {
+
+        setBitacora(BitacoraCosechaDB);
+        let plantas = plants;
+        setPlants([]);
+        setContador(0);
+
+        setSelectedProductor(null);
+        setSelectedParcela(null);
+    }
+
+    // Función para manejar cambios en la listas de Items
+    const handlerListItem = () => {
+        setExpanded(!expanded);
+        if (expanded == true) {
+            cleanForm();
+        }
+    }
+
+
+    async function ShowNewBitacora() {
+        loadBitacoras();
+        closeModal();
+    }
+
     const toggleDialog = () => {
         setVisibleModal(!visibleModal);
     };
@@ -100,7 +162,7 @@ const Cosecha = () => {
             const updatePlantas = { ...plants };
             if (selectedAfectacion !== null) {
                 let cantidad: number = parseInt(cantidaMazorcas, 10);
-                let nuevaAfectacion = { ID_afectacion: selectedAfectacion, cantidad: cantidad };
+                let nuevaAfectacion = { id: -1, ID_planta: -1, ID_afectacion: selectedAfectacion, cantidad: cantidad };
                 updatePlantas[indexPlant].mazorcas.push(nuevaAfectacion);
 
 
@@ -108,7 +170,7 @@ const Cosecha = () => {
         } else {
             const updatePlantas = { ...plants };
             if (selectedAfectacion !== null) {
-                let nuevaAfectacion = { ID_afectacion: selectedAfectacion };
+                let nuevaAfectacion = { id: -1, ID_planta: -1, ID_afectacion: selectedAfectacion };
                 updatePlantas[indexPlant].afectacion.push(nuevaAfectacion);
 
             }
@@ -121,7 +183,7 @@ const Cosecha = () => {
 
     const handleAddPlant = () => {
         setContador(prev => prev + 1);
-        setPlants([...plants, { numeroPlanta: contador + 1, cantidadSanas: 0, afectacion: [], mazorcas: [], }]);
+        setPlants([...plants, { id: -1, ID_bitacora: -1, numeroPlanta: contador + 1, cantidadSanas: 0, afectacion: [], mazorcas: [], }]);
     };
     const handleRemovePlant = (index: number) => {
         const updatedPlants = plants.filter((_, i) => i !== index);
@@ -211,6 +273,7 @@ const Cosecha = () => {
     };
 
     const closeModal = () => {
+        reducerList();
         setVisibleModal1(!visibleModal1!);
     }
 
@@ -227,7 +290,7 @@ const Cosecha = () => {
             bitacora.plantas = plants;
             for (let i = 0; i < plants.length; i++) {
                 let plant = plants[i];
-                let idPlanta = await insertPlantas(plant,idBitacora, db);
+                let idPlanta = await insertPlantas(plant, idBitacora, db);
                 for (let j = 0; j < plant.afectacion.length; j++) {
                     let afectacion = plant.afectacion[j];
                     await insertAfectaciones(afectacion, idPlanta, db)
@@ -239,23 +302,46 @@ const Cosecha = () => {
                 }
             }
 
-            /*
-            let result = await getPlantas(db);
-            let afec = awaitgetAfectacion(db);
-            let mazorca = await getMazorcas(db);
-            console.log(result);
-            console.log("\n afectaciones", afec);
-            console.log("\nmazorcas", mazorca);
-    
-*/
-            
 
             setVisibleModal1(!visibleModal1);
         }
 
     };
 
+    // renderizado para la lista de bitacoras
+    const renderItem = ({ item }) => {
+        const productor = productores.find(p => p.value === item.ID_productor);
+        const parcela = parcelas.find(parcela => parcela.value === item.ID_parcela);
+        return (
+            <View key={item.id}>
+            <Card containerStyle={styleCosecha.cardContainer}>
+                <ListItem.Content>
+                    <ListItem.Title>{productor.label}</ListItem.Title>
+                    <ListItem.Subtitle>{parcela.label}</ListItem.Subtitle>
+                    <Text style={styleCosecha.detailText}>Resultado:{item.id} </Text>
 
+
+                    <View style={styleCosecha.buttonContainer}>
+                        <Button
+                            title="Enviar"
+                            
+                            buttonStyle={styleCosecha.enviarButton}
+                        />
+                        <Button
+                            title="Editar"
+                            type="outline"
+                            titleStyle={{ color: '#28A745' }}
+                    
+                            buttonStyle={styleCosecha.editarButton}
+                            containerStyle={styleCosecha.editButtonContainer}
+                        />
+                    </View>
+                </ListItem.Content>
+            </Card>
+            </View>
+            )
+   
+    }
 
 
     return (
@@ -272,7 +358,7 @@ const Cosecha = () => {
                         }
                         isExpanded={expanded}
                         onPress={() => {
-                            setExpanded(!expanded);
+                            handlerListItem();
                         }}
                     >
 
@@ -513,7 +599,7 @@ const Cosecha = () => {
                                 <Text>Aun no tenemos Resultados</Text>
                                 <Dialog.Actions>
                                     <Button title="Aceptar" type="clear"
-                                    //  onPress={() => ShowNewBitacora()}
+                                        onPress={() => ShowNewBitacora()}
                                     />
                                 </Dialog.Actions>
                             </Dialog>
@@ -527,11 +613,14 @@ const Cosecha = () => {
                         </Text>
                         <View style={styleCosecha.divider} />
                     </View>
-                    
+
                 </View>
 
 
             }
+            data={bitacoras}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={renderItem}
         />
 
 
